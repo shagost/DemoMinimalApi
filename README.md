@@ -57,6 +57,7 @@ $ dotnet run
 ```
 
 Acessar a url https://localhost:7271/swagger
+
 Observar se a porta está correta com a da sua máquina.
 
 Irá abrir a página do Swagger, ou caso queira, poderá utilizar um aplicativo como o `Postman`.
