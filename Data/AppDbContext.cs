@@ -41,6 +41,19 @@ namespace FluxoCaixa.Data
                 .AutoInclude();
 
             modelBuilder.Entity<TipoLancamento>()
+                .HasKey(k => k.Id);
+
+            modelBuilder.Entity<TipoLancamento>()
+                .Property(p => p.Nome)
+                .HasColumnType("varchar(30)")
+                .IsRequired();
+
+            modelBuilder.Entity<TipoLancamento>()
+                .Property(p => p.Sigla)
+                .HasColumnType("varchar(1)")
+                .IsRequired();
+
+            modelBuilder.Entity<TipoLancamento>()
                 .HasData(
                     new TipoLancamento
                     {

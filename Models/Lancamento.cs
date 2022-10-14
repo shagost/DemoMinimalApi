@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using FluxoCaixa.ViewModels;
 
 namespace FluxoCaixa.Models
 {
@@ -24,6 +25,24 @@ namespace FluxoCaixa.Models
                 DataLancamento = DateTime.Now;
 
             Saldo = saldoAnterior + Valor;
+        }
+
+        public static Lancamento Create(LancamentoCreateViewModel viewModel)
+        {
+            return new Lancamento
+            {
+                Descricao = viewModel.Descricao,
+                TipoLancamentoId = viewModel.TipoLancamentoId,
+                Valor = viewModel.Valor
+            };
+        }
+
+        public void Update(LancamentoUpdateViewModel viewModel)
+        {
+            Descricao = viewModel.Descricao;
+            TipoLancamentoId = viewModel.TipoLancamentoId;
+            Valor = viewModel.Valor < 0 ? viewModel.Valor * -1 : viewModel.Valor;
+            TipoLancamento = null;
         }
     }
 }

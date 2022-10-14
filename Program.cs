@@ -59,9 +59,9 @@ app.MapGet("/v1/lancamentos{id:int}", (int id, AppDbContext context) =>
 .WithName("GetLancamentoPorId")
 .WithTags("Lancamento");
 
-app.MapPost("/v1/lancamentos", (Lancamento model, AppDbContext context) =>
+app.MapPost("/v1/lancamentos", (LancamentoCreateViewModel viewModel, AppDbContext context) =>
 {
-    if (!MiniValidator.TryValidate(model, out var errors))
+    if (!MiniValidator.TryValidate(viewModel, out var errors))
         return Results.ValidationProblem(errors);
 
     var lancamentoAnterior = context.Lancamento.OrderByDescending(o =>
@@ -71,6 +71,7 @@ app.MapPost("/v1/lancamentos", (Lancamento model, AppDbContext context) =>
     if (lancamentoAnterior != null)
         saldo = lancamentoAnterior.Saldo;
 
+    var model = Lancamento.Create(viewModel);
     model.AtualizaLancamento(saldo);
 
     context.Lancamento.Add(model);
@@ -85,23 +86,39 @@ app.MapPost("/v1/lancamentos", (Lancamento model, AppDbContext context) =>
 .WithName("PostLancamento")
 .WithTags("Lancamento");
 
-app.MapPut("/v1/lancamentos{id:int}", (int id, Lancamento model, AppDbContext context) =>
+app.MapPut("/v1/lancamentos{id:int}", (int id, LancamentoUpdateViewModel viewModel, AppDbContext context) =>
 {
     var lancamento = context.Lancamento.AsNoTracking<Lancamento>().FirstOrDefault(x => x.Id == id);
     if (lancamento == null || lancamento.Id != id)
         return Results.NotFound();
 
-    if (!MiniValidator.TryValidate(model, out var errors))
+    if (!MiniValidator.TryValidate(viewModel, out var errors))
         return Results.ValidationProblem(errors);
 
-    var lancamentoAnterior = context.Lancamento.OrderByDescending(o =>
-        o.DataLancamento).FirstOrDefault();
+    var lancamentoAnterior = context.Lancamento.AsNoTracking<Lancamento>()
+        .Where(x => x.Id < lancamento.Id)
+        .OrderByDescending(o => o.DataLancamento).FirstOrDefault();
 
-    model.AtualizaLancamento(lancamentoAnterior.Saldo);
+    lancamento.Update(viewModel);
+    lancamento.AtualizaLancamento(lancamentoAnterior.Saldo);
 
-    context.Lancamento.Update(model);
+    var novoSaldo = lancamento.Saldo;
+
+    var lancamentosPosteriores = context.Lancamento
+        .Where(x => x.Id > lancamento.Id)
+        .OrderBy(o => o.DataLancamento).ToList();
+
+    // Correção dos saldos já existentes
+    lancamentosPosteriores.ForEach(x =>
+    {
+        x.Saldo = novoSaldo + x.Valor;
+        context.Lancamento.Update(x);
+        novoSaldo = x.Saldo;
+    });
+
+    context.Lancamento.Update(lancamento);
     return context.SaveChanges() > 0
-        ? Results.Created($"/v1/lancamentos/{model.Id}", model)
+        ? Results.Created($"/v1/lancamentos/{lancamento.Id}", lancamento)
         : Results.BadRequest("Ocorreu um erro ao salvar o lançamento");
 })
 .ProducesValidationProblem()
@@ -151,7 +168,7 @@ app.MapPost("/v1/consolidado", (ConsolidadoConsultaViewModel viewModel, AppDbCon
 
     return consolidadoViewModel is not null ? Results.Ok(consolidadoViewModel) : Results.NotFound();
 })
-.Produces<Lancamento>(StatusCodes.Status200OK)
+.Produces<ConsolidadoViewModel>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status404NotFound)
 .WithName("PostConsolidado")
 .WithTags("Consolidado");
