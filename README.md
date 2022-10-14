@@ -1,7 +1,5 @@
 # Demo Fluxo de caixa
 
-![GitHub repo size](https://img.shields.io/github/repo-size/shagost/README-template?style=for-the-badge)
-
 > Projeto de API demo de fluxo de caixa para entrada e saída de valores e geração de relatório consolidado por datas.
 
 ### Projeto desenvolvido usando Minimal API:
