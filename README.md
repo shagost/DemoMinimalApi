@@ -23,7 +23,7 @@ Antes de começar, verifique se você atendeu aos seguintes requisitos:
 - Abrir o terminal e executar o comando abaixo:
 
 ```
-$ git clone https://github.com/shagost/DemoMinimalApi
+$ git clone https://github.com/shagost/DemoMinimalApi.git
 ```
 
 > Obs.: Alternativamente você pode clicar em `Code` e `Download ZIP`, descompactar em uma pasta, acessar a pasta pelo terminal e abrir o VSCode com o comando
